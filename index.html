@@ -8,10 +8,6 @@
 
 <title>VITAL</title>
 
-<link rel="manifest" href="manifest.json">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 
 body{
@@ -33,21 +29,14 @@ border-radius:10px;
 }
 
 .exercise{
-margin-bottom:10px;
+margin-bottom:8px;
 }
 
-input{
-padding:5px;
-margin-top:5px;
-}
-
-button{
-padding:8px;
+.meal{
+background:#333;
+padding:10px;
 margin-top:10px;
-background:#4CAF50;
-border:none;
-border-radius:5px;
-color:white;
+border-radius:8px;
 }
 
 </style>
@@ -62,22 +51,6 @@ color:white;
 
 <div class="card" id="diet"></div>
 
-<div class="card">
-<h2>⏱ Timer recupero</h2>
-<p id="timer">Pronto</p>
-</div>
-
-<div class="card">
-<h2>⚖️ Peso corporeo</h2>
-<input type="number" id="bw" placeholder="peso kg">
-<button onclick="saveBodyWeight()">Salva</button>
-</div>
-
-<div class="card">
-<h2>📊 Progressione</h2>
-<canvas id="chart"></canvas>
-</div>
-
 <script>
 
 const workouts = {
@@ -85,36 +58,52 @@ const workouts = {
 1:{
 name:"Full Body A",
 ex:[
-{id:1,n:"Chest Press inclinata",s:"4x6-8"},
-{id:2,n:"Lat Machine neutra",s:"4x8-10"},
-{id:3,n:"Leg Press",s:"3x8-10"},
-{id:4,n:"Rematore macchina",s:"3x8-10"},
-{id:5,n:"Alzate laterali",s:"3x12-15"},
-{id:6,n:"Pallof Press",s:"3x12"}
+"Chest Press inclinata — 4×6-8 RIR2",
+"Lat Machine presa neutra — 4×8-10 RIR2",
+"Leg Press — 3×8-10 RIR2",
+"Rematore macchina supportata — 3×8-10 RIR2",
+"Alzate laterali manubri — 3×12-15 RIR1",
+"Pallof Press ai cavi — 3×12 per lato"
+]
+},
+
+2:{
+name:"Cardio Zona 2",
+ex:[
+"45-60 min camminata veloce oppure cyclette"
 ]
 },
 
 3:{
 name:"Full Body B",
 ex:[
-{id:7,n:"Lat Machine larga",s:"4x6-8"},
-{id:8,n:"Chest Press",s:"3x8-10"},
-{id:9,n:"Hack Squat",s:"3x8"},
-{id:10,n:"Hip Thrust",s:"3x10"},
-{id:11,n:"Reverse Pec Deck",s:"3x15"},
-{id:12,n:"Side Plank",s:"3x40 sec"}
+"Lat Machine presa larga — 4×6-8 RIR2",
+"Chest Press orizzontale — 3×8-10 RIR2",
+"Hack Squat — 3×8 RIR3",
+"Hip Thrust — 3×10 RIR3",
+"Reverse Pec Deck — 3×15 RIR1",
+"Side Plank — 3×30-40 sec per lato"
+]
+},
+
+5:{
+name:"Interval Training",
+ex:[
+"5 min riscaldamento",
+"30 sec veloce + 90 sec lento × 8",
+"5 min defaticamento"
 ]
 },
 
 6:{
 name:"Full Body C",
 ex:[
-{id:13,n:"Chest Press",s:"3x10"},
-{id:14,n:"Pulley basso",s:"3x10"},
-{id:15,n:"Leg Curl",s:"3x12"},
-{id:16,n:"Leg Extension",s:"3x12"},
-{id:17,n:"Shoulder Press",s:"3x8-10"},
-{id:18,n:"Bird Dog",s:"3x10"}
+"Chest Press orizzontale — 3×10 RIR2",
+"Pulley basso — 3×10 RIR2",
+"Leg Curl — 3×12 RIR1",
+"Leg Extension — 3×12 RIR1",
+"Shoulder Press Machine — 3×8-10 RIR2",
+"Bird Dog — 3×10 per lato lento"
 ]
 }
 
@@ -122,146 +111,101 @@ ex:[
 
 const diet = {
 
-1:["pane tostato + olio","frutta secca","70g carbo + uovo + albume","prosciutto","carne bianca + carbo"],
-2:["yogurt greco + cereali","frutta secca","50g carbo + piselli","parmigiano","carne rossa"],
-3:["pane + albume","frutta secca","70g carbo + parmigiano","bresaola","carne bianca"],
-4:["pane + prosciutto","frutta secca","legumi + carbo","yogurt","uovo + albume"],
-5:["pane + albume","frutta secca","parmigiano + carbo","prosciutto","carne bianca"],
-6:["pane + olio","frutta secca","uovo + albume + carbo","yogurt","carne bianca"],
-0:["pane + albume","frutta secca","carne bianca","frutta secca","pasto libero"]
+1:{
+colazione:"60g pane tostato oppure 50g fette biscottate + 2 cucchiaini olio",
+spuntino:"10g frutta secca",
+pranzo:"Verdura + 70g carboidrati + 1 uovo + 150g albume + 3 cucchiaini olio",
+merenda:"50g prosciutto crudo magro / cotto magro / bresaola",
+cena:"Verdura + 70g carboidrati + 200g carne bianca + 2 cucchiaini olio"
+},
+
+2:{
+colazione:"150g yogurt greco 0% + 50g cereali o fiocchi avena + 10g frutta secca",
+spuntino:"10g frutta secca",
+pranzo:"50g carboidrati + 200g piselli oppure 50g legumi secchi + 3 cucchiaini olio",
+merenda:"20g parmigiano",
+cena:"Verdura + 70g carboidrati + 200g carne rossa + 2 cucchiaini olio"
+},
+
+3:{
+colazione:"60g pane tostato oppure 50g fette biscottate + 100g albume + 1 cucchiaino olio",
+spuntino:"10g frutta secca",
+pranzo:"Verdura + 70g carboidrati + 30g parmigiano + 3 cucchiaini olio",
+merenda:"50g prosciutto crudo / cotto / bresaola",
+cena:"Verdura + 70g carboidrati + 200g carne bianca + 2 cucchiaini olio"
+},
+
+4:{
+colazione:"60g pane tostato + 50g prosciutto crudo / cotto / bresaola",
+spuntino:"10g frutta secca",
+pranzo:"50g carboidrati + 200g piselli oppure 50g legumi + 3 cucchiaini olio",
+merenda:"150g yogurt greco 0%",
+cena:"Verdura + 70g carboidrati + 1 uovo + 150g albume + 2 cucchiaini olio"
+},
+
+5:{
+colazione:"60g pane tostato + 100g albume + 1 cucchiaino olio",
+spuntino:"10g frutta secca",
+pranzo:"Verdura + 70g carboidrati + 30g parmigiano + 3 cucchiaini olio",
+merenda:"50g prosciutto crudo / cotto / bresaola",
+cena:"Verdura + 70g carboidrati + 200g carne bianca + 2 cucchiaini olio"
+},
+
+6:{
+colazione:"60g pane tostato + 2 cucchiaini olio",
+spuntino:"10g frutta secca",
+pranzo:"Verdura + 70g carboidrati + 1 uovo + 150g albume + 3 cucchiaini olio",
+merenda:"150g yogurt greco + 10g frutta secca",
+cena:"Verdura + 70g carboidrati + 200g carne bianca + 2 cucchiaini olio"
+},
+
+0:{
+colazione:"50g pane tostato + 100g albume + 1 cucchiaino olio",
+spuntino:"10g frutta secca",
+pranzo:"Verdura + 50g carboidrati + 200g carne bianca + 2 cucchiaini olio",
+merenda:"10g frutta secca",
+cena:"PASTO LIBERO"
+}
 
 }
 
 const today=new Date().getDay()
 
-const wDiv=document.getElementById("workout")
+const workoutDiv=document.getElementById("workout")
 
 if(workouts[today]){
 
 let html="<h2>"+workouts[today].name+"</h2>"
 
 workouts[today].ex.forEach(e=>{
-
-let saved=localStorage.getItem("w"+e.id)||""
-
-html+=`
-<div class="exercise">
-
-<input type="checkbox" onclick="timer()">
-
-<b>${e.n}</b> ${e.s}
-
-<br>
-
-Peso <input type="number" value="${saved}" onchange="saveWeight(${e.id},this.value)">
-
-</div>
-`
-
+html+="<div class='exercise'>"+e+"</div>"
 })
 
-wDiv.innerHTML=html
+workoutDiv.innerHTML=html
 
 }else{
 
-wDiv.innerHTML="<h2>Riposo</h2>"
+workoutDiv.innerHTML="<h2>Riposo</h2>"
 
 }
 
 const d=diet[today]
 
-document.getElementById("diet").innerHTML=
+document.getElementById("diet").innerHTML=`
 
-"<h2>Dieta</h2>"+
-"Colazione: "+d[0]+"<br>"+
-"Spuntino: "+d[1]+"<br>"+
-"Pranzo: "+d[2]+"<br>"+
-"Merenda: "+d[3]+"<br>"+
-"Cena: "+d[4]
+<h2>🥗 Dieta</h2>
 
-function saveWeight(id,v){
+<div class="meal"><b>Colazione</b><br>${d.colazione}</div>
 
-localStorage.setItem("w"+id,v)
+<div class="meal"><b>Spuntino</b><br>${d.spuntino}</div>
 
-updateChart()
+<div class="meal"><b>Pranzo</b><br>${d.pranzo}</div>
 
-}
+<div class="meal"><b>Merenda</b><br>${d.merenda}</div>
 
-function timer(){
+<div class="meal"><b>Cena</b><br>${d.cena}</div>
 
-let t=90
-
-const el=document.getElementById("timer")
-
-const i=setInterval(()=>{
-
-el.innerText=t+" sec"
-
-t--
-
-if(t<0){
-
-clearInterval(i)
-
-el.innerText="finito"
-
-}
-
-},1000)
-
-}
-
-function saveBodyWeight(){
-
-let w=document.getElementById("bw").value
-
-let data=JSON.parse(localStorage.getItem("bw"))||[]
-
-data.push(w)
-
-localStorage.setItem("bw",JSON.stringify(data))
-
-alert("salvato")
-
-}
-
-const ctx=document.getElementById("chart")
-
-const chart=new Chart(ctx,{
-type:"line",
-data:{
-labels:["1","2","3","4","5","6","7","8"],
-datasets:[{
-label:"Carichi",
-data:[],
-borderColor:"lime"
-}]
-}
-})
-
-function updateChart(){
-
-let arr=[]
-
-for(let i=1;i<20;i++){
-
-let v=localStorage.getItem("w"+i)
-
-if(v) arr.push(v)
-
-}
-
-chart.data.datasets[0].data=arr
-
-chart.update()
-
-}
-
-updateChart()
-
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('service-worker.js');
-}
+`
 
 </script>
 
