@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -25,27 +26,28 @@ text-align:center;
 }
 
 .card{
-background:#1e1e1e;
+background:#222;
 padding:15px;
 margin-bottom:20px;
 border-radius:10px;
 }
 
 .exercise{
-margin:10px 0;
+margin-bottom:10px;
 }
 
-input[type="number"]{
-width:70px;
+input{
+padding:5px;
+margin-top:5px;
 }
 
 button{
 padding:8px;
-border:none;
-border-radius:6px;
+margin-top:10px;
 background:#4CAF50;
+border:none;
+border-radius:5px;
 color:white;
-margin-top:5px;
 }
 
 </style>
@@ -56,205 +58,152 @@ margin-top:5px;
 
 <h1>🏋️ VITAL</h1>
 
-<div class="card" id="calendar"></div>
-
 <div class="card" id="workout"></div>
 
 <div class="card" id="diet"></div>
 
 <div class="card">
-
-<h2>⏱ Timer Recupero</h2>
-
+<h2>⏱ Timer recupero</h2>
 <p id="timer">Pronto</p>
-
 </div>
 
 <div class="card">
-
 <h2>⚖️ Peso corporeo</h2>
-
-<input type="number" id="bodyweight">
-<button onclick="saveWeight()">Salva</button>
-
-<p id="lastWeight"></p>
-
+<input type="number" id="bw" placeholder="peso kg">
+<button onclick="saveBodyWeight()">Salva</button>
 </div>
 
 <div class="card">
-
-<h2>📊 Progressione Carichi</h2>
-
-<canvas id="progressChart"></canvas>
-
+<h2>📊 Progressione</h2>
+<canvas id="chart"></canvas>
 </div>
 
 <script>
-
-/* -------- ALLENAMENTI -------- */
 
 const workouts = {
 
 1:{
 name:"Full Body A",
-exercises:[
-{name:"Chest Press inclinata",sets:"4x6-8 RIR2"},
-{name:"Lat Machine neutra",sets:"4x8-10 RIR2"},
-{name:"Leg Press",sets:"3x8-10 RIR2"},
-{name:"Rematore macchina",sets:"3x8-10 RIR2"},
-{name:"Alzate laterali",sets:"3x12-15 RIR1"},
-{name:"Pallof Press",sets:"3x12"}
-]
-},
-
-2:{
-name:"Cardio Zona 2",
-exercises:[
-{name:"45-60 min camminata veloce",sets:"Zona 2"}
+ex:[
+{id:1,n:"Chest Press inclinata",s:"4x6-8"},
+{id:2,n:"Lat Machine neutra",s:"4x8-10"},
+{id:3,n:"Leg Press",s:"3x8-10"},
+{id:4,n:"Rematore macchina",s:"3x8-10"},
+{id:5,n:"Alzate laterali",s:"3x12-15"},
+{id:6,n:"Pallof Press",s:"3x12"}
 ]
 },
 
 3:{
 name:"Full Body B",
-exercises:[
-{name:"Lat Machine larga",sets:"4x6-8"},
-{name:"Chest Press",sets:"3x8-10"},
-{name:"Hack Squat",sets:"3x8"},
-{name:"Hip Thrust",sets:"3x10"},
-{name:"Reverse Pec Deck",sets:"3x15"},
-{name:"Side Plank",sets:"3x40 sec"}
-]
-},
-
-5:{
-name:"Interval Training",
-exercises:[
-{name:"30 sec veloce + 90 sec lento x8",sets:"HIIT"}
+ex:[
+{id:7,n:"Lat Machine larga",s:"4x6-8"},
+{id:8,n:"Chest Press",s:"3x8-10"},
+{id:9,n:"Hack Squat",s:"3x8"},
+{id:10,n:"Hip Thrust",s:"3x10"},
+{id:11,n:"Reverse Pec Deck",s:"3x15"},
+{id:12,n:"Side Plank",s:"3x40 sec"}
 ]
 },
 
 6:{
 name:"Full Body C",
-exercises:[
-{name:"Chest Press",sets:"3x10"},
-{name:"Pulley basso",sets:"3x10"},
-{name:"Leg Curl",sets:"3x12"},
-{name:"Leg Extension",sets:"3x12"},
-{name:"Shoulder Press",sets:"3x8-10"},
-{name:"Bird Dog",sets:"3x10"}
+ex:[
+{id:13,n:"Chest Press",s:"3x10"},
+{id:14,n:"Pulley basso",s:"3x10"},
+{id:15,n:"Leg Curl",s:"3x12"},
+{id:16,n:"Leg Extension",s:"3x12"},
+{id:17,n:"Shoulder Press",s:"3x8-10"},
+{id:18,n:"Bird Dog",s:"3x10"}
 ]
 }
 
 }
 
-/* -------- DIETA LISTE -------- */
-
 const diet = {
 
-1:[
-"Colazione: yogurt greco + avena",
-"Pranzo: riso + pollo + verdure",
-"Snack: frutta secca",
-"Cena: pesce + verdure"
-],
-
-2:[
-"Colazione: uova + pane integrale",
-"Pranzo: riso + tacchino",
-"Snack: yogurt",
-"Cena: salmone + verdure"
-],
-
-3:[
-"Colazione: yogurt + frutta",
-"Pranzo: pasta + pollo",
-"Snack: frutta",
-"Cena: carne magra + verdure"
-],
-
-4:["Dieta lista 4"],
-5:["Dieta lista 5"],
-6:["Dieta lista 6"],
-7:["Dieta lista 7"]
+1:["pane tostato + olio","frutta secca","70g carbo + uovo + albume","prosciutto","carne bianca + carbo"],
+2:["yogurt greco + cereali","frutta secca","50g carbo + piselli","parmigiano","carne rossa"],
+3:["pane + albume","frutta secca","70g carbo + parmigiano","bresaola","carne bianca"],
+4:["pane + prosciutto","frutta secca","legumi + carbo","yogurt","uovo + albume"],
+5:["pane + albume","frutta secca","parmigiano + carbo","prosciutto","carne bianca"],
+6:["pane + olio","frutta secca","uovo + albume + carbo","yogurt","carne bianca"],
+0:["pane + albume","frutta secca","carne bianca","frutta secca","pasto libero"]
 
 }
 
-/* -------- GIORNO AUTOMATICO -------- */
+const today=new Date().getDay()
 
-const day = new Date().getDay()
+const wDiv=document.getElementById("workout")
 
-document.getElementById("calendar").innerHTML =
-"<h2>📅 Giorno: "+["Dom","Lun","Mar","Mer","Gio","Ven","Sab"][day]+"</h2>"
+if(workouts[today]){
 
-/* -------- ALLENAMENTO -------- */
+let html="<h2>"+workouts[today].name+"</h2>"
 
-let workoutHTML=""
+workouts[today].ex.forEach(e=>{
 
-if(workouts[day]){
+let saved=localStorage.getItem("w"+e.id)||""
 
-workoutHTML+="<h2>"+workouts[day].name+"</h2>"
-
-workouts[day].exercises.forEach((ex,i)=>{
-
-const weightID="w_"+day+"_"+i
-const savedWeight=localStorage.getItem(weightID)||""
-
-workoutHTML+=`
+html+=`
 <div class="exercise">
 
-<input type="checkbox" onchange="startTimer(90)">
+<input type="checkbox" onclick="timer()">
 
-<b>${ex.name}</b> (${ex.sets})
+<b>${e.n}</b> ${e.s}
 
 <br>
 
-Peso: 
-<input type="number"
-value="${savedWeight}"
-onchange="saveExerciseWeight('${weightID}',this.value)"> kg
+Peso <input type="number" value="${saved}" onchange="saveWeight(${e.id},this.value)">
 
 </div>
 `
 
 })
 
+wDiv.innerHTML=html
+
 }else{
 
-workoutHTML="<h2>Riposo</h2>"
+wDiv.innerHTML="<h2>Riposo</h2>"
 
 }
 
-document.getElementById("workout").innerHTML=workoutHTML
+const d=diet[today]
 
-/* -------- DIETA -------- */
+document.getElementById("diet").innerHTML=
 
-let dietHTML="<h2>🥗 Dieta</h2>"
+"<h2>Dieta</h2>"+
+"Colazione: "+d[0]+"<br>"+
+"Spuntino: "+d[1]+"<br>"+
+"Pranzo: "+d[2]+"<br>"+
+"Merenda: "+d[3]+"<br>"+
+"Cena: "+d[4]
 
-diet[day].forEach(d=>{
-dietHTML+="<p>"+d+"</p>"
-})
+function saveWeight(id,v){
 
-document.getElementById("diet").innerHTML=dietHTML
+localStorage.setItem("w"+id,v)
 
-/* -------- TIMER -------- */
+updateChart()
 
-function startTimer(sec){
+}
 
-let time=sec
+function timer(){
 
-const timer=document.getElementById("timer")
+let t=90
 
-const interval=setInterval(()=>{
+const el=document.getElementById("timer")
 
-timer.innerText=time+" sec"
+const i=setInterval(()=>{
 
-time--
+el.innerText=t+" sec"
 
-if(time<0){
+t--
 
-clearInterval(interval)
+if(t<0){
 
-timer.innerText="Recupero finito"
+clearInterval(i)
+
+el.innerText="finito"
 
 }
 
@@ -262,46 +211,28 @@ timer.innerText="Recupero finito"
 
 }
 
-/* -------- SALVATAGGIO PESI -------- */
+function saveBodyWeight(){
 
-function saveExerciseWeight(id,value){
+let w=document.getElementById("bw").value
 
-localStorage.setItem(id,value)
+let data=JSON.parse(localStorage.getItem("bw"))||[]
 
-updateChart()
+data.push(w)
 
-}
+localStorage.setItem("bw",JSON.stringify(data))
 
-/* -------- TRACKER PESO -------- */
-
-function saveWeight(){
-
-const w=document.getElementById("bodyweight").value
-
-localStorage.setItem("bodyweight",w)
-
-document.getElementById("lastWeight").innerText="Ultimo peso: "+w+" kg"
+alert("salvato")
 
 }
 
-const savedWeight=localStorage.getItem("bodyweight")
-
-if(savedWeight){
-
-document.getElementById("lastWeight").innerText="Ultimo peso: "+savedWeight+" kg"
-
-}
-
-/* -------- GRAFICO PROGRESSIONE -------- */
-
-const ctx=document.getElementById("progressChart")
+const ctx=document.getElementById("chart")
 
 const chart=new Chart(ctx,{
 type:"line",
 data:{
 labels:["1","2","3","4","5","6","7","8"],
 datasets:[{
-label:"Progressione",
+label:"Carichi",
 data:[],
 borderColor:"lime"
 }]
@@ -310,25 +241,23 @@ borderColor:"lime"
 
 function updateChart(){
 
-const data=[]
+let arr=[]
 
-for(let i=0;i<8;i++){
+for(let i=1;i<20;i++){
 
-const w=localStorage.getItem("w_1_"+i)
+let v=localStorage.getItem("w"+i)
 
-if(w) data.push(w)
+if(v) arr.push(v)
 
 }
 
-chart.data.datasets[0].data=data
+chart.data.datasets[0].data=arr
 
 chart.update()
 
 }
 
 updateChart()
-
-/* -------- PWA OFFLINE -------- */
 
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('service-worker.js');
@@ -337,5 +266,4 @@ navigator.serviceWorker.register('service-worker.js');
 </script>
 
 </body>
-
 </html>
