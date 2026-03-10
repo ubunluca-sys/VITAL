@@ -9,6 +9,8 @@
 
 <link rel="manifest" href="manifest.json">
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 
 body{
@@ -23,23 +25,27 @@ text-align:center;
 }
 
 .card{
-background:#222;
+background:#1e1e1e;
 padding:15px;
 margin-bottom:20px;
 border-radius:10px;
 }
 
 .exercise{
-margin:8px 0;
+margin:10px 0;
+}
+
+input[type="number"]{
+width:70px;
 }
 
 button{
-padding:10px;
-margin-top:10px;
+padding:8px;
 border:none;
 border-radius:6px;
 background:#4CAF50;
 color:white;
+margin-top:5px;
 }
 
 </style>
@@ -50,108 +56,163 @@ color:white;
 
 <h1>🏋️ VITAL</h1>
 
-<div id="workout" class="card"></div>
+<div class="card" id="calendar"></div>
 
-<div id="diet" class="card"></div>
+<div class="card" id="workout"></div>
+
+<div class="card" id="diet"></div>
 
 <div class="card">
 
-<h2>⏱ Timer recupero</h2>
+<h2>⏱ Timer Recupero</h2>
 
-<button onclick="startTimer(60)">1 min</button>
-<button onclick="startTimer(90)">1:30</button>
-<button onclick="startTimer(120)">2 min</button>
+<p id="timer">Pronto</p>
 
-<p id="timer"></p>
+</div>
+
+<div class="card">
+
+<h2>⚖️ Peso corporeo</h2>
+
+<input type="number" id="bodyweight">
+<button onclick="saveWeight()">Salva</button>
+
+<p id="lastWeight"></p>
+
+</div>
+
+<div class="card">
+
+<h2>📊 Progressione Carichi</h2>
+
+<canvas id="progressChart"></canvas>
 
 </div>
 
 <script>
+
+/* -------- ALLENAMENTI -------- */
 
 const workouts = {
 
 1:{
 name:"Full Body A",
 exercises:[
-"Chest Press inclinata 4x6-8",
-"Lat Machine neutra 4x8-10",
-"Leg Press 3x8-10",
-"Rematore macchina 3x8-10",
-"Alzate laterali 3x12-15",
-"Pallof Press 3x12"
+{name:"Chest Press inclinata",sets:"4x6-8 RIR2"},
+{name:"Lat Machine neutra",sets:"4x8-10 RIR2"},
+{name:"Leg Press",sets:"3x8-10 RIR2"},
+{name:"Rematore macchina",sets:"3x8-10 RIR2"},
+{name:"Alzate laterali",sets:"3x12-15 RIR1"},
+{name:"Pallof Press",sets:"3x12"}
 ]
 },
 
 2:{
 name:"Cardio Zona 2",
 exercises:[
-"45-60 min camminata veloce o cyclette"
+{name:"45-60 min camminata veloce",sets:"Zona 2"}
 ]
 },
 
 3:{
 name:"Full Body B",
 exercises:[
-"Lat Machine larga 4x6-8",
-"Chest Press 3x8-10",
-"Hack Squat 3x8",
-"Hip Thrust 3x10",
-"Reverse Pec Deck 3x15",
-"Side Plank"
+{name:"Lat Machine larga",sets:"4x6-8"},
+{name:"Chest Press",sets:"3x8-10"},
+{name:"Hack Squat",sets:"3x8"},
+{name:"Hip Thrust",sets:"3x10"},
+{name:"Reverse Pec Deck",sets:"3x15"},
+{name:"Side Plank",sets:"3x40 sec"}
 ]
 },
 
 5:{
 name:"Interval Training",
 exercises:[
-"30 sec veloce + 90 sec lento x8"
+{name:"30 sec veloce + 90 sec lento x8",sets:"HIIT"}
 ]
 },
 
 6:{
 name:"Full Body C",
 exercises:[
-"Chest Press 3x10",
-"Pulley basso 3x10",
-"Leg Curl 3x12",
-"Leg Extension 3x12",
-"Shoulder Press 3x8-10",
-"Bird Dog"
+{name:"Chest Press",sets:"3x10"},
+{name:"Pulley basso",sets:"3x10"},
+{name:"Leg Curl",sets:"3x12"},
+{name:"Leg Extension",sets:"3x12"},
+{name:"Shoulder Press",sets:"3x8-10"},
+{name:"Bird Dog",sets:"3x10"}
 ]
 }
 
 }
 
+/* -------- DIETA LISTE -------- */
+
 const diet = {
 
-1:["Lista 1"],
-2:["Lista 2"],
-3:["Lista 3"],
-4:["Lista 4"],
-5:["Lista 5"],
-6:["Lista 6"],
-7:["Lista 7"]
+1:[
+"Colazione: yogurt greco + avena",
+"Pranzo: riso + pollo + verdure",
+"Snack: frutta secca",
+"Cena: pesce + verdure"
+],
+
+2:[
+"Colazione: uova + pane integrale",
+"Pranzo: riso + tacchino",
+"Snack: yogurt",
+"Cena: salmone + verdure"
+],
+
+3:[
+"Colazione: yogurt + frutta",
+"Pranzo: pasta + pollo",
+"Snack: frutta",
+"Cena: carne magra + verdure"
+],
+
+4:["Dieta lista 4"],
+5:["Dieta lista 5"],
+6:["Dieta lista 6"],
+7:["Dieta lista 7"]
 
 }
 
+/* -------- GIORNO AUTOMATICO -------- */
+
 const day = new Date().getDay()
+
+document.getElementById("calendar").innerHTML =
+"<h2>📅 Giorno: "+["Dom","Lun","Mar","Mer","Gio","Ven","Sab"][day]+"</h2>"
+
+/* -------- ALLENAMENTO -------- */
 
 let workoutHTML=""
 
 if(workouts[day]){
 
-workoutHTML += "<h2>"+workouts[day].name+"</h2>"
+workoutHTML+="<h2>"+workouts[day].name+"</h2>"
 
 workouts[day].exercises.forEach((ex,i)=>{
 
-const id="ex_"+day+"_"+i
-
-const checked = localStorage.getItem(id)=="true" ? "checked" : ""
+const weightID="w_"+day+"_"+i
+const savedWeight=localStorage.getItem(weightID)||""
 
 workoutHTML+=`
 <div class="exercise">
-<input type="checkbox" id="${id}" ${checked} onchange="saveCheck('${id}')">
-${ex}
+
+<input type="checkbox" onchange="startTimer(90)">
+
+<b>${ex.name}</b> (${ex.sets})
+
+<br>
+
+Peso: 
+<input type="number"
+value="${savedWeight}"
+onchange="saveExerciseWeight('${weightID}',this.value)"> kg
+
 </div>
 `
 
@@ -165,25 +226,17 @@ workoutHTML="<h2>Riposo</h2>"
 
 document.getElementById("workout").innerHTML=workoutHTML
 
+/* -------- DIETA -------- */
 
 let dietHTML="<h2>🥗 Dieta</h2>"
 
 diet[day].forEach(d=>{
-
 dietHTML+="<p>"+d+"</p>"
-
 })
 
 document.getElementById("diet").innerHTML=dietHTML
 
-
-function saveCheck(id){
-
-const el=document.getElementById(id)
-
-localStorage.setItem(id,el.checked)
-
-}
+/* -------- TIMER -------- */
 
 function startTimer(sec){
 
@@ -201,13 +254,81 @@ if(time<0){
 
 clearInterval(interval)
 
-timer.innerText="FINITO"
+timer.innerText="Recupero finito"
 
 }
 
 },1000)
 
 }
+
+/* -------- SALVATAGGIO PESI -------- */
+
+function saveExerciseWeight(id,value){
+
+localStorage.setItem(id,value)
+
+updateChart()
+
+}
+
+/* -------- TRACKER PESO -------- */
+
+function saveWeight(){
+
+const w=document.getElementById("bodyweight").value
+
+localStorage.setItem("bodyweight",w)
+
+document.getElementById("lastWeight").innerText="Ultimo peso: "+w+" kg"
+
+}
+
+const savedWeight=localStorage.getItem("bodyweight")
+
+if(savedWeight){
+
+document.getElementById("lastWeight").innerText="Ultimo peso: "+savedWeight+" kg"
+
+}
+
+/* -------- GRAFICO PROGRESSIONE -------- */
+
+const ctx=document.getElementById("progressChart")
+
+const chart=new Chart(ctx,{
+type:"line",
+data:{
+labels:["1","2","3","4","5","6","7","8"],
+datasets:[{
+label:"Progressione",
+data:[],
+borderColor:"lime"
+}]
+}
+})
+
+function updateChart(){
+
+const data=[]
+
+for(let i=0;i<8;i++){
+
+const w=localStorage.getItem("w_1_"+i)
+
+if(w) data.push(w)
+
+}
+
+chart.data.datasets[0].data=data
+
+chart.update()
+
+}
+
+updateChart()
+
+/* -------- PWA OFFLINE -------- */
 
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('service-worker.js');
@@ -216,4 +337,5 @@ navigator.serviceWorker.register('service-worker.js');
 </script>
 
 </body>
+
 </html>
