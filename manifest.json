@@ -1,6 +1,13 @@
 {
 "name":"VITAL Fitness",
+"short_name":"VITA{
+"name":"VITAL",
 "short_name":"VITAL",
+"start_url":"./index.html",
+"display":"standalone",
+"background_color":"#111",
+"theme_color":"#111"
+}",
 "start_url":"./index.html",
 "display":"standalone",
 "background_color":"#111",
