@@ -4,7 +4,15 @@
 "name":"VITAL",
 "short_name":"VITAL",
 "start_url":"./index.html",
-"display":"standalone",
+"display":"standalo{
+"name": "VITAL Fitness",
+"short_name": "VITAL",
+"start_url": "./index.html",
+"display": "standalone",
+"background_color": "#111111",
+"theme_color": "#111111"
+}
+ne",
 "background_color":"#111",
 "theme_{
 "name": "VITAL Fitness",
