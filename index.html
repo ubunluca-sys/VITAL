@@ -5,7 +5,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>VITAL Fitness</title>
+<title>VITAL</title>
 
 <link rel="manifest" href="manifest.json">
 
@@ -33,8 +33,13 @@ border-radius:10px;
 margin:8px 0;
 }
 
-input[type="checkbox"]{
-margin-right:10px;
+button{
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+background:#4CAF50;
+color:white;
 }
 
 </style>
@@ -45,141 +50,170 @@ margin-right:10px;
 
 <h1>🏋️ VITAL</h1>
 
-<div class="card">
+<div id="workout" class="card"></div>
 
-<h2>Lunedì – Full Body A</h2>
-
-<div class="exercise">
-<input type="checkbox">Chest Press inclinata 45° 4×6–8
-</div>
-
-<div class="exercise">
-<input type="checkbox">Lat Machine presa neutra 4×8–10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Leg Press 3×8–10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Rematore macchina supportata 3×8–10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Alzate laterali manubri 3×12–15
-</div>
-
-<div class="exercise">
-<input type="checkbox">Pallof Press 3×12 per lato
-</div>
-
-</div>
-
+<div id="diet" class="card"></div>
 
 <div class="card">
 
-<h2>Martedì – Cardio Zona 2</h2>
+<h2>⏱ Timer recupero</h2>
 
-<div class="exercise">
-<input type="checkbox">45–60 min camminata veloce o cyclette
-</div>
+<button onclick="startTimer(60)">1 min</button>
+<button onclick="startTimer(90)">1:30</button>
+<button onclick="startTimer(120)">2 min</button>
 
-</div>
-
-
-<div class="card">
-
-<h2>Mercoledì – Full Body B</h2>
-
-<div class="exercise">
-<input type="checkbox">Lat Machine presa larga 4×6–8
-</div>
-
-<div class="exercise">
-<input type="checkbox">Chest Press orizzontale 3×8–10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Hack Squat 3×8
-</div>
-
-<div class="exercise">
-<input type="checkbox">Hip Thrust 3×10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Reverse Pec Deck 3×15
-</div>
-
-<div class="exercise">
-<input type="checkbox">Side Plank 3×30–40 sec
-</div>
+<p id="timer"></p>
 
 </div>
-
-
-<div class="card">
-
-<h2>Venerdì – Interval Training</h2>
-
-<div class="exercise">
-<input type="checkbox">30 sec veloce + 90 sec lento ×8
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Sabato – Full Body C</h2>
-
-<div class="exercise">
-<input type="checkbox">Chest Press orizzontale 3×10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Pulley basso 3×10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Leg Curl 3×12
-</div>
-
-<div class="exercise">
-<input type="checkbox">Leg Extension 3×12
-</div>
-
-<div class="exercise">
-<input type="checkbox">Shoulder Press Machine 3×8–10
-</div>
-
-<div class="exercise">
-<input type="checkbox">Bird Dog 3×10 per lato
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>🥗 Dieta base</h2>
-
-<p>Colazione: yogurt greco + avena + frutta</p>
-<p>Pranzo: riso + pollo + verdure</p>
-<p>Snack: frutta secca o yogurt</p>
-<p>Cena: pesce o carne magra + verdure</p>
-
-</div>
-
 
 <script>
 
+const workouts = {
+
+1:{
+name:"Full Body A",
+exercises:[
+"Chest Press inclinata 4x6-8",
+"Lat Machine neutra 4x8-10",
+"Leg Press 3x8-10",
+"Rematore macchina 3x8-10",
+"Alzate laterali 3x12-15",
+"Pallof Press 3x12"
+]
+},
+
+2:{
+name:"Cardio Zona 2",
+exercises:[
+"45-60 min camminata veloce o cyclette"
+]
+},
+
+3:{
+name:"Full Body B",
+exercises:[
+"Lat Machine larga 4x6-8",
+"Chest Press 3x8-10",
+"Hack Squat 3x8",
+"Hip Thrust 3x10",
+"Reverse Pec Deck 3x15",
+"Side Plank"
+]
+},
+
+5:{
+name:"Interval Training",
+exercises:[
+"30 sec veloce + 90 sec lento x8"
+]
+},
+
+6:{
+name:"Full Body C",
+exercises:[
+"Chest Press 3x10",
+"Pulley basso 3x10",
+"Leg Curl 3x12",
+"Leg Extension 3x12",
+"Shoulder Press 3x8-10",
+"Bird Dog"
+]
+}
+
+}
+
+const diet = {
+
+1:["Lista 1"],
+2:["Lista 2"],
+3:["Lista 3"],
+4:["Lista 4"],
+5:["Lista 5"],
+6:["Lista 6"],
+7:["Lista 7"]
+
+}
+
+const day = new Date().getDay()
+
+let workoutHTML=""
+
+if(workouts[day]){
+
+workoutHTML += "<h2>"+workouts[day].name+"</h2>"
+
+workouts[day].exercises.forEach((ex,i)=>{
+
+const id="ex_"+day+"_"+i
+
+const checked = localStorage.getItem(id)=="true" ? "checked" : ""
+
+workoutHTML+=`
+<div class="exercise">
+<input type="checkbox" id="${id}" ${checked} onchange="saveCheck('${id}')">
+${ex}
+</div>
+`
+
+})
+
+}else{
+
+workoutHTML="<h2>Riposo</h2>"
+
+}
+
+document.getElementById("workout").innerHTML=workoutHTML
+
+
+let dietHTML="<h2>🥗 Dieta</h2>"
+
+diet[day].forEach(d=>{
+
+dietHTML+="<p>"+d+"</p>"
+
+})
+
+document.getElementById("diet").innerHTML=dietHTML
+
+
+function saveCheck(id){
+
+const el=document.getElementById(id)
+
+localStorage.setItem(id,el.checked)
+
+}
+
+function startTimer(sec){
+
+let time=sec
+
+const timer=document.getElementById("timer")
+
+const interval=setInterval(()=>{
+
+timer.innerText=time+" sec"
+
+time--
+
+if(time<0){
+
+clearInterval(interval)
+
+timer.innerText="FINITO"
+
+}
+
+},1000)
+
+}
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
+navigator.serviceWorker.register('service-worker.js');
 }
 
 </script>
 
 </body>
-
 </html>
